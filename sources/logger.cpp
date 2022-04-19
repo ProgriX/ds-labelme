@@ -1,20 +1,22 @@
 #include "logger.h"
 
 #include <chrono>
+#include <iomanip>
 
 const string colorYellow = "\e[33m";
 const string colorGreen = "\e[32m";
 const string colorRed = "\e[31m";
 const string colorDefault = "\e[0m";
 
-Logger::Logger(bool isEnable)
+Logger::Logger(std::string name, bool isEnable)
 {
     _isEnable = isEnable;
+    _name = name;
 }
 
 Logger::~Logger()
 {
-
+    
 }
 
 
@@ -22,14 +24,13 @@ Logger::~Logger()
 void Logger::print(ostream &writeTo, std::string text){
     
     if(_isEnable){
-        char buf[100];
         auto time_now = chrono::system_clock::now();
 
         time_t time_now_t = chrono::system_clock::to_time_t(time_now);
-
-        strftime(buf, 100, "(%Y-%m-%d %H:%M:%S): ", gmtime(&time_now_t));
-
-        writeTo << buf << text << colorDefault << std::endl;
+        time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+        writeTo << _name;
+        writeTo << put_time(localtime(&time_now_t), " (%H:%M:%S %m.%d): ");
+        writeTo << text << colorDefault << std::endl;
     }
 }
 

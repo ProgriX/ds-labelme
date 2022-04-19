@@ -2,14 +2,19 @@
 #include <iostream>
 
 
+
+#ifndef LOGGER_H
+#define LOGGER_H
+
 using namespace std;
 
 class Logger
 {
 private:
     bool _isEnable;
+    std::string _name;
 public:
-    Logger(bool isEnable = true);
+    Logger(std::string name, bool isEnable = true);
     ~Logger();
 
     void print(ostream& writeTo, std::string text);
@@ -21,3 +26,4 @@ public:
     void disable();
 };
 
+#endif // LOGGER_H

@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 
 #include "../ds_base/deepstream_app.h"
+#include "../logger.h"
 
 struct BBbox
 {
@@ -52,6 +53,7 @@ private:
     std::string _ip;
     int _port;
     std::string _name;
+    Logger log;
 
     int _socket;
     sockaddr_in _host;

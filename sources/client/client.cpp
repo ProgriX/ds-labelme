@@ -38,7 +38,7 @@ vector <string> bboxJsons;
 
 
 
-Client::Client(const NvDsSocket& params)
+Client::Client(const NvDsSocket& params) : log(params.name)
 {
 
     _connected = false;
@@ -71,7 +71,7 @@ void Client::connectToHost(){
     _socket = socket( AF_INET, SOCK_STREAM, 0 );
     if(_socket < 0)
     {
-            perror( "Error calling socket" );
+            log.printError( "Error calling socket" );
             return;
     }
 
@@ -90,7 +90,7 @@ void Client::connectToHost(){
     }
     _connected = true;
     sendRaw("<head dataType=\"" + _name + "\" version=1 supplierTypeName=\"DeepStream\"/>");
-    cout << _name << " connected (" << _ip << ":" << _port << ")" << endl;
+    log.printLog((string)"connected (" + _ip + ":" + to_string(_port) + ")");
     
 }
 
@@ -139,7 +139,7 @@ RecvestResult Client::recvest(){
 }
 
 void Client::connectionLost(){
-    cerr << _name << " lost(" << _ip << ":" << _port << ")" << endl;
+    log.printError((string)"lost (" + _ip + ":" + to_string(_port) + ")");
     close(_socket);
     _connected = false;
 }
@@ -200,7 +200,7 @@ void Client::addMetaTime(string key, const uint64_t value){
     }
     else
     {
-        perror("Time format error");
+        log.printError("Time format error");
     }
     
     string millisecondsText = to_string(milliseconds);

@@ -65,7 +65,7 @@ const string imageName = "tmp.jpg";
 const string pathToImage = "/dev/shm/ds-labelme/image-buffer/";
 const string imageFullName = pathToImage + imageName;
 
-static const int FPS_LIMIT = 30;
+static const int FPS_LIMIT = 100;
 
 
 static constexpr auto DELAY_FOR_LIMIT = std::chrono::milliseconds(1000 / FPS_LIMIT);
@@ -86,7 +86,7 @@ constexpr unsigned MAX_INSTANCES = 128;
 Client* labelSender;
 Client* imageSender;
 thread* recvestLoop;
-Logger logger(true);
+Logger logger("Main thread");
 
 static atomic<int> recvCount { 0 };
 static atomic<bool> isSimpleJsonSend { true };
@@ -261,7 +261,7 @@ fpsLogger(gpointer context, NvDsAppPerfStruct *str) {
     static double lastFps = -1000;
 
     g_mutex_lock(&fps_lock);
-    if( abs(lastFps - fps) > 5){
+    if( abs(lastFps - fps) > 1){
         if(fps > 1){
             logger.printLog((string)"fps: " + to_string(fps));
         } else {
@@ -398,7 +398,7 @@ static bool save_image(const std::string &path,
     auto cdata = base64_encode(imaget.data, width * height * 3);
 
     
-    // cv::imwrite("/dev/shm/test.jpg", imaget);
+    // cv::imwrite("/dev/shm/frame" + to_string(frame_meta->frame_num) + ".jpg", imaget);
 
     imageSender->addMeta("imagePitch", (u_int64_t)ip_surf_sys->surfaceList[0].pitch);
     imageSender->addMeta("imageColorFormat", "BGR");
