@@ -93,7 +93,7 @@ static atomic<bool> isSimpleJsonSend { true };
 static atomic<bool> isImageJsonSend { true };
 
 std::mutex recvSendLock;
-bool stop = false;
+static atomic<bool> stop {false};
 
 AppCtx *appCtx[MAX_INSTANCES];
 static guint cintr = FALSE;
@@ -187,7 +187,7 @@ void parseXML(string input){
 }
 
 void recieveImage(Client* client){
-    while (!stop)
+    while (!stop.load())
     {
         recvSendLock.lock();
         RecvestResult recvest = client->recvest();
@@ -201,7 +201,7 @@ void recieveImage(Client* client){
         this_thread::sleep_for(1000ms);
         
     }
-    cout << "sender stoped" << endl;
+    logger.printLog("sender stoped");
 }
 
 // Before deepstream loop
@@ -217,7 +217,8 @@ void onStart(){
 void onStop(){
     delete labelSender;
     delete imageSender;
-    stop = true;
+    stop.store(true);
+    recvestLoop->join();
 }
 
 void bboxProcess(Client& client, NvDsFrameMeta *frame_meta){

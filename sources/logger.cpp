@@ -28,8 +28,9 @@ void Logger::print(ostream &writeTo, std::string text){
 
         time_t time_now_t = chrono::system_clock::to_time_t(time_now);
         time_t now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-        writeTo << _name;
-        writeTo << put_time(localtime(&time_now_t), " (%H:%M:%S %m.%d): ");
+        
+        writeTo << put_time(localtime(&time_now_t), "(%H:%M:%S %m.%d) ");
+        writeTo << _name << ": ";
         writeTo << text << colorDefault << std::endl;
     }
 }

@@ -50,6 +50,7 @@ Client::Client(const NvDsSocket& params) : log(params.name)
 }
 
 Client::~Client(){
+    shutdown(_socket, SHUT_RDWR);
     close(_socket);
 }
 
