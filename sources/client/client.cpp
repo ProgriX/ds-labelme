@@ -37,11 +37,10 @@ const char* zerosLine = "000";
 vector <string> bboxJsons;
 
 
-
 Client::Client(const NvDsSocket& params) : log(params.name)
 {
 
-    _connected = false;
+    _state = State::disconnected;
     _name = params.name;
     _port = params.port;
     _ip = params.ip;
@@ -50,8 +49,12 @@ Client::Client(const NvDsSocket& params) : log(params.name)
 }
 
 Client::~Client(){
-    shutdown(_socket, SHUT_RDWR);
-    close(_socket);
+    breakConnection();
+    connectionLost();
+}
+
+Client::State Client::getState(){
+    return _state;
 }
 
 void Client::blockingMode(){
@@ -89,7 +92,7 @@ void Client::connectToHost(){
     {
             return;
     }
-    _connected = true;
+    _state = State::connected;
     sendRaw("<head dataType=\"" + _name + "\" version=1 supplierTypeName=\"DeepStream\"/>");
     log.printLog((string)"connected (" + _ip + ":" + to_string(_port) + ")");
     
@@ -105,12 +108,14 @@ RecvestResult Client::recvest(){
 
     RecvestResult recvRes;
 
-    if(!_connected){
+    if(_state == State::disconnected){
         recvRes.success = false;
         return recvRes;
     }
 
+    _state = State::receiving;
     int result = recv(_socket, server_reply , MAX_REPLY_SIZE - 1 , 0);
+    _state = State::connected;
     // cout << "rdataget" << endl;
     // for (int i = 0; i < result; i++)
     // {
@@ -139,19 +144,27 @@ RecvestResult Client::recvest(){
 
 }
 
+void Client::breakConnection(){
+    shutdown(_socket, SHUT_RDWR);
+}
+
 void Client::connectionLost(){
-    log.printError((string)"lost (" + _ip + ":" + to_string(_port) + ")");
+    log.printWarning((string)"lost (" + _ip + ":" + to_string(_port) + ")");
     close(_socket);
-    _connected = false;
+    _state = State::disconnected;
 }
 
 
 void Client::sendRaw(std::string message){
 
-    if(!_connected){
+    if(_state == State::disconnected){
         return;
     }
+
+    _state = State::sending;
     int result = send( _socket, message.c_str(), message.size(), 0);
+    _state = State::connected;
+
     if( result <= 0 )
     {
         connectionLost();
@@ -159,7 +172,7 @@ void Client::sendRaw(std::string message){
 }
 
 void Client::reconnect(){
-    if(_connected){
+    if(_state != State::disconnected){
         return;
     }
     auto now = std::chrono::steady_clock::now();
@@ -170,7 +183,13 @@ void Client::reconnect(){
         connectToHost();
         _lastConnectTime = std::chrono::steady_clock::now();
     }
-    
+}
+
+void Client::checkSendHangUp(){
+    if(_state == State::sending){
+        log.printError("send hang-up, reconnection...");
+        breakConnection();
+    }
 }
 
 vector<string> metaJsons;

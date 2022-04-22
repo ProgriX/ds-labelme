@@ -65,7 +65,7 @@ const string imageName = "tmp.jpg";
 const string pathToImage = "/dev/shm/ds-labelme/image-buffer/";
 const string imageFullName = pathToImage + imageName;
 
-static const int FPS_LIMIT = 100;
+static const int FPS_LIMIT = 10;
 
 
 static constexpr auto DELAY_FOR_LIMIT = std::chrono::milliseconds(1000 / FPS_LIMIT);
@@ -267,16 +267,8 @@ fpsLogger(gpointer context, NvDsAppPerfStruct *str) {
             logger.printLog((string)"fps: " + to_string(fps));
         } else {
             logger.printWarning((string)"low fps: " + to_string(fps));
-            if(isSimpleJsonSend == false){
-                logger.printError("Simple json send hang-up");
-                labelSender->connectionLost();
-                logger.printLog("Simple json client reconnection");
-            }
-            if(isImageJsonSend == false){
-                logger.printError("Image json send hang-up");
-                imageSender->connectionLost();
-                logger.printLog("Image json client reconnection");
-            }
+            labelSender->checkSendHangUp();
+            imageSender->checkSendHangUp();
         }
         
         lastFps = fps;

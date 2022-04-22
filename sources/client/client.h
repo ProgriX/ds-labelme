@@ -24,8 +24,13 @@ struct RecvestResult{
 class Client{
 
 public:
+    
+    enum class State{ disconnected, connected, sending, receiving };
+    
     Client(const NvDsSocket& params);
     ~Client();
+
+    State getState();
 
     void connectToHost();
 
@@ -42,22 +47,23 @@ public:
 
     void sendRaw(std::string message);
     void reconnect();
+    void checkSendHangUp();
 
     void sendMessage();
-    void connectionLost();
+    void breakConnection();
 
 private:
 
-    
+    void connectionLost();
 
     std::string _ip;
     int _port;
     std::string _name;
     Logger log;
+    State _state;
 
     int _socket;
     sockaddr_in _host;
-    bool _connected;
     int _flags;
     std::chrono::steady_clock::time_point _lastConnectTime;
 };
