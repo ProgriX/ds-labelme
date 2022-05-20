@@ -42,6 +42,10 @@
 #include <mutex>
 #include <chrono>
 #include <atomic>
+#include <exception>
+
+// libpng
+#include <png.h>
 
 // OpenCV
 #include <opencv2/imgcodecs.hpp>
@@ -284,6 +288,21 @@ fpsLogger(gpointer context, NvDsAppPerfStruct *str) {
 
 }
 
+bool test = false;
+vector<uchar> pngData;
+
+void user_write_data(png_structp png_ptr,png_bytep data, png_size_t length){
+    for (size_t i = 0; i < length; i++)
+    {
+        pngData.push_back(data[i]);
+    }
+    
+}
+
+void user_flush_data(png_structp png_ptr){
+
+}
+
 /// Will save an image cropped with the dimension specified by obj_meta
 /// If the path is too long, the save will not occur and an error message will be
 /// diplayed.
@@ -301,9 +320,15 @@ static bool save_image(const std::string &path,
                        NvDsFrameMeta *frame_meta, unsigned &obj_counter) {
 
     
-    if(recvCount.load() == 0){
+    // if(recvCount.load() == 0){
+    //     return false;
+    // }
+
+    if(test){
         return false;
     }
+
+    test = true;
     recvCount.fetch_sub(1);
     logger.printLog("Request image");
 
@@ -350,7 +375,7 @@ static bool save_image(const std::string &path,
 	nvbufsurface_create_params.height = (guint) srcHeight;
 	nvbufsurface_create_params.size = 0;
 	nvbufsurface_create_params.isContiguous = true;
-	nvbufsurface_create_params.colorFormat = NVBUF_COLOR_FORMAT_BGRA;
+	nvbufsurface_create_params.colorFormat = NVBUF_COLOR_FORMAT_RGBA;
 	nvbufsurface_create_params.layout = NVBUF_LAYOUT_PITCH;
     nvbufsurface_create_params.memType = NVBUF_MEM_SYSTEM;
 
@@ -388,6 +413,56 @@ static bool save_image(const std::string &path,
 
     uchar* data = (uchar*)ip_surf_sys->surfaceList[0].dataPtr;
     unsigned int dataSize = ip_surf_sys->surfaceList[0].dataSize;
+
+    FILE *fp = fopen("/dev/shm/test2.png", "wb");
+    if (!fp)
+    {
+        throw "Can't open";
+    }
+
+    png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
+    if (!png_ptr){
+        throw "Can't create struct";
+    }
+        
+    png_infop info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr)
+    {
+        png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+        fclose(fp);
+        throw "Can't create struct";
+    }
+
+    
+    png_set_write_fn(png_ptr, png_get_io_ptr(png_ptr), user_write_data, user_flush_data);
+    
+    png_set_IHDR(png_ptr, info_ptr, width, height, 8, PNG_COLOR_TYPE_RGBA,
+        PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+        PNG_FILTER_TYPE_DEFAULT);
+    
+    uchar* rows[1080];
+
+    for (int i = 0; i < height; ++i) {
+        rows[i] = data + (i*width*4);
+    }
+    if (setjmp(png_jmpbuf(png_ptr))) {
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+        fclose(fp);
+        throw "Can't create struct";
+    }
+    png_set_rows(png_ptr, info_ptr, rows);
+    png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, nullptr);
+    png_write_end(png_ptr, info_ptr);
+
+    for (uchar byte : pngData)
+    {
+        fwrite(&byte, 1, 1, fp);
+    }
+
+    fclose(fp);
+    png_destroy_write_struct(&png_ptr, &info_ptr);
+
+
 
     cv::Mat imagef = cv::Mat(height, width, CV_8UC4, data, pitch);
     cv::Mat imaget = cv::Mat(height, width, CV_8UC3);

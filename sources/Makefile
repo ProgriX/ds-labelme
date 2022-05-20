@@ -59,7 +59,7 @@ CFLAGS+= $(shell bash $(PLATFORM_SETTINGS) includes)
 CFLAGS+= $(shell pkg-config --cflags $(PKGS))
 
 LIBS+= $(LIB_PATHS) -lcudart -lstdc++fs -lopencv_imgcodecs -lopencv_core -lopencv_imgproc -lnvdsgst_meta -lnvds_meta -lnvds_msgbroker -lnvds_batch_jpegenc -lnvdsgst_helper -lnvdsgst_smartrecord -lnvds_utils -lm \
-       -lcuda -lgstrtspserver-1.0 -lnvbufsurface -lnvbufsurftransform -lpthread -ldl -Wl,-rpath,$(LIB_SO)
+       -lcuda -lpng -lgstrtspserver-1.0 -lnvbufsurface -lnvbufsurftransform -lpthread -ldl -Wl,-rpath,$(LIB_SO)
 LIBS+= $(shell pkg-config --libs $(PKGS))
 
 all: $(APP)
