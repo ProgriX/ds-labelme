@@ -37,7 +37,7 @@ make -C sources/
 
 ## Запуск
 
-Для запуска нужно скачать дополнительные данные: [Сети и пример видео](https://drive.google.com/drive/folders/12UYX7HXSOt-An3J96yJcsu-kTFkhg_sO?usp=sharing)
+Для запуска нужно скачать дополнительные данные: [cети и пример видео](https://drive.google.com/drive/folders/12UYX7HXSOt-An3J96yJcsu-kTFkhg_sO?usp=sharing)
 
 Разархивировать в корень проекта
 
