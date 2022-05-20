@@ -2,8 +2,7 @@
 
 ## Установка deepstream
 
-Для начала требуется установить deepstream (Если он ещё не установлен). Инструкция по следующей ссылке
-https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_Quickstart.html
+Для начала требуется установить deepstream (Если он ещё не установлен). Инструкция по следующей [ссылке](https://docs.nvidia.com/metropolis/deepstream/dev-guide/text/DS_Quickstart.html)
 
 ## Сборка и установка ds-labelme
 
@@ -38,8 +37,7 @@ make -C sources/
 
 ## Запуск
 
-Для запуска нужно скачать дополнительные данные: Сети и пример видео:
-https://drive.google.com/file/d/1KG81dmKlVLi9O2qmGdGusAb78VNJJA-n/view?usp=sharing
+Для запуска нужно скачать дополнительные данные: [Сети и пример видео](https://drive.google.com/drive/folders/12UYX7HXSOt-An3J96yJcsu-kTFkhg_sO?usp=sharing)
 
 Разархивировать в корень проекта
 
