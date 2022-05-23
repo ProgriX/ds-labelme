@@ -320,13 +320,13 @@ static bool save_image(const std::string &path,
                        NvDsFrameMeta *frame_meta, unsigned &obj_counter) {
 
     
-    // if(recvCount.load() == 0){
-    //     return false;
-    // }
-
-    if(test){
+    if(recvCount.load() == 0){
         return false;
     }
+
+    // if(test){
+    //     return false;
+    // }
 
     test = true;
     recvCount.fetch_sub(1);
@@ -470,27 +470,27 @@ static bool save_image(const std::string &path,
     
     cv::cvtColor(imagef, imaget, cv::COLOR_BGRA2BGR);
 
-    auto cdata = base64_encode(imaget.data, width * height * 3);
+    auto cdata = base64_encode(pngData.data(), pngData.size());
 
     
     // cv::imwrite("/dev/shm/test.jpg", imaget);
 
     imageSender->addMeta("imagePitch", (u_int64_t)ip_surf_sys->surfaceList[0].pitch);
-    imageSender->addMeta("imageColorFormat", "BGR");
+    imageSender->addMeta("imageColorFormat", "PNG");
     imageSender->addMeta("imageData", cdata);
 
-    bool isLocked = recvSendLock.try_lock();
+    // bool isLocked = recvSendLock.try_lock();
 
-    if(!isLocked){
-        logger.printWarning("sender is busy");
-        return false;
-    }
+    // if(!isLocked){
+    //     logger.printWarning("sender is busy");
+    //    return false;
+    //}
 
     isImageJsonSend.store(false);
     imageSender->sendMessage();
     isImageJsonSend.store(true);
 
-    recvSendLock.unlock();
+    // recvSendLock.unlock();
     logger.printLog("image sended");
 
     return true;
