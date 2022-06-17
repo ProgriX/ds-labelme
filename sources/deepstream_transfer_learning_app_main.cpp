@@ -471,7 +471,7 @@ static bool save_image(const std::string &path,
     cv::cvtColor(imagef, imaget, cv::COLOR_BGRA2BGR);
 
     auto cdata = base64_encode(pngData.data(), pngData.size());
-
+    pngData.clear();
     
     // cv::imwrite("/dev/shm/test.jpg", imaget);
 
